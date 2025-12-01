@@ -1,11 +1,14 @@
 package com.example.mr1aihoroscope.ui;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +35,26 @@ public class MainActivity extends AppCompatActivity {
 
         initZodiacSpinner();
 
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int selectedId = genderGroup.getCheckedRadioButtonId();
+                if (selectedId == -1) {
+                    Toast.makeText(getApplicationContext(), "Выберите пол", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                String gender = ((RadioButton) findViewById(selectedId)).getText().toString();
+                String zodiac = zodiacSpinner.getSelectedItem().toString();
+
+                resultText.setText("💭 Думаю над подарком...");
+
+                sendRequestToAI(gender, zodiac);
+            }
+        });
+
+    }
+
+    private void sendRequestToAI(String gender, String zodiac) {
     }
 
     private void initZodiacSpinner(){
