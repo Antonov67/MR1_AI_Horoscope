@@ -1,6 +1,7 @@
 package com.example.mr1aihoroscope.ui;
 
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -28,5 +29,24 @@ public class MainActivity extends AppCompatActivity {
         genderGroup = findViewById(R.id.genderGroup);
         zodiacSpinner = findViewById(R.id.zodiacSpinner);
         sendButton = findViewById(R.id.sendButton);
+
+        initZodiacSpinner();
+
+    }
+
+    private void initZodiacSpinner(){
+        String[] zodiacSigns = {
+                "Овен", "Телец", "Близнецы", "Рак",
+                "Лев", "Дева", "Весы", "Скорпион",
+                "Стрелец", "Козерог", "Водолей", "Рыбы"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                zodiacSigns
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        zodiacSpinner.setAdapter(adapter);
     }
 }
