@@ -14,6 +14,22 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mr1aihoroscope.R;
+import com.example.mr1aihoroscope.network.Api;
+import com.example.mr1aihoroscope.network.OpenRouterRequest;
+import com.example.mr1aihoroscope.network.OpenRouterResponse;
+import com.google.gson.Gson;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private Button sendButton;
     private Spinner zodiacSpinner;
     private RadioGroup genderGroup;
+    private Api api;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +52,15 @@ public class MainActivity extends AppCompatActivity {
 
         initZodiacSpinner();
 
+        Gson gson = new Gson();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://openrouter.ai/api/v1")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+        api = retrofit.create(Api.class);
+
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -46,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 String gender = ((RadioButton) findViewById(selectedId)).getText().toString();
                 String zodiac = zodiacSpinner.getSelectedItem().toString();
 
-                resultText.setText("💭 Думаю над подарком...");
+                resultText.setText("\uD83D\uDCAD Думаю над подарком...");
 
                 sendRequestToAI(gender, zodiac);
             }
@@ -55,9 +81,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendRequestToAI(String gender, String zodiac) {
+        List<OpenRouterRequest.Message> messages = new ArrayList<>();
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy, EEEE", new Locale("ru"));
+        String formattedDate = sdf.format(date);
+
+        String prompt = "Создай гороскоп для " + gender + " по знаку зодиака " + zodiac
+                + " на " + formattedDate + ", ответь кратко и с юмором";
+        messages.add(new OpenRouterRequest.Message(prompt));
+
+        OpenRouterRequest request = new OpenRouterRequest(messages);
+
+        api.sendMessage(request).enqueue(new Callback<OpenRouterResponse>() {
+            @Override
+            public void onResponse(Call<OpenRouterResponse> call, Response<OpenRouterResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        String reply = response.body().choices.get(0).message.content;
+
+                        reply = reply.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
+
+                        // Отображаем HTML
+                        resultText.setText(android.text.Html.fromHtml(
+                                "🎁 Идея подарка:<br><br>" + reply,
+                                android.text.Html.FROM_HTML_MODE_LEGACY
+                        ));
+                    } catch (Exception e) {
+                        resultText.setText("Ошибка разбора ответа: " + e.getMessage());
+                    }
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "empty";
+                        resultText.setText("Ошибка: " + response.code() + "\n" + errorBody);
+                    } catch (Exception e) {
+                        resultText.setText("Ошибка: " + response.code());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OpenRouterResponse> call, Throwable t) {
+                resultText.setText("Ошибка сети: " + t.getMessage());
+            }
+        });
     }
 
-    private void initZodiacSpinner(){
+    private void initZodiacSpinner() {
         String[] zodiacSigns = {
                 "Овен", "Телец", "Близнецы", "Рак",
                 "Лев", "Дева", "Весы", "Скорпион",
