@@ -52,11 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
         initZodiacSpinner();
 
-        Gson gson = new Gson();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://openrouter.ai/api/v1")
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .baseUrl("https://openrouter.ai/api/v1/")
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         api = retrofit.create(Api.class);
@@ -72,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 String gender = ((RadioButton) findViewById(selectedId)).getText().toString();
                 String zodiac = zodiacSpinner.getSelectedItem().toString();
 
-                resultText.setText("\uD83D\uDCAD Думаю над подарком...");
+                resultText.setText("\uD83D\uDCAD Думаю над гороскопом...");
 
                 sendRequestToAI(gender, zodiac);
             }
