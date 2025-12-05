@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
                         // Отображаем HTML
                         resultText.setText(android.text.Html.fromHtml(
-                                "🎁 Идея подарка:<br><br>" + reply,
+                                "Гороскоп:<br><br>" + reply,
                                 android.text.Html.FROM_HTML_MODE_LEGACY
                         ));
                     } catch (Exception e) {
